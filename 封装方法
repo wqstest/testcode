@@ -1,0 +1,50 @@
+# coding:utf-8
+__author__ = "wang"
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
+from PageObject.src.common import log
+from PageObject.config import gloablprama as gl
+from selenium.webdriver.common.by import By
+"""
+封装页面公共方法
+"""
+class BasePage(object):
+    def __init__(self,driver,base_url,p_title):
+        self.driver = driver
+        self.url = base_url
+        self.mylog = log.log()
+        self.title = p_title
+    #打开页面，并校验连接是否加载正确
+    def _open(self):
+        try:
+            self.driver.get(self.url)
+        except:
+            self.mylog.error(u"打开页面失败"+self.url)
+    #重写定位元素的方法
+    def find_element(self,loc):
+        try:
+            # WebDriverWait(self.driver,10).until(ec.visibility_of_element_located(*loc))
+            # sleep(2)
+            # return self.driver.find_element(loc)
+            element = WebDriverWait(self.driver,5,0.5).until(
+                ec.presence_of_element_located(loc)
+            )
+            return element
+        except:
+            self.mylog.error(u"找不到元素"+str(loc))
+    #重写send_keys方法
+    def send_keys(self,value,loc,clear=True):
+        try:
+            if clear:
+                self.find_element(loc).clear()
+                self.find_element(loc).send_keys(value)
+            else:
+                self.find_element(loc).send_keys(value)
+        except AttributeError:
+            self.mylog.error(u"输入错误"+str(loc)+value)
+     #截屏
+    def take_screenshot(self,img_name):
+        try:
+            self.driver.get_screenshot_as_file(gl.img_path+img_name+".png")
+        except:
+            self.mylog.error(u"截图失败"+img_name)
